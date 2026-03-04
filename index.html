@@ -1,25 +1,22 @@
-﻿document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function(){
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const scoreDisplay = document.getElementById("score");
     const colorPicker = document.getElementById("snakeColor");
     const difficulty = document.getElementById("difficulty");
 
-
     const box = 20;
     const size = 400;
     
-    // Core Game State
     let snake, snake2, food, score, mode, running = false;
     let direction, nextDirection;
     let direction2, nextDirection2;
     
-    // Smooth Movement Variables
+    // Animation timing variables
     let lastTime = 0;
-    let moveProgress = 0; // 0 to 1 (percentage between cells)
+    let moveAccumulator = 0;
 
-
-    // Listeners
+    // Button Listeners
     document.getElementById("normal").onclick = () => startGame("normal");
     document.getElementById("endless").onclick = () => startGame("endless");
     document.getElementById("roulette").onclick = () => startGame("roulette");
@@ -27,32 +24,28 @@
     document.getElementById("restart").onclick = () => startGame(mode);
     document.getElementById("menuBtn").onclick = backToMenu;
 
-
     function startGame(selectedMode){
         mode = selectedMode;
         score = 0;
-        moveProgress = 0;
+        moveAccumulator = 0;
         running = true;
         
-        // Initial setup
+        // Initial setup - P1 starts with two segments to allow smooth sliding
         snake = [{x: 200, y: 200}, {x: 180, y: 200}];
         direction = nextDirection = "RIGHT";
-
 
         if(mode === "multiplayer"){
             snake2 = [{x: 100, y: 100}, {x: 80, y: 100}];
             direction2 = nextDirection2 = "RIGHT";
         }
 
-
         food = spawnFood();
         scoreDisplay.innerText = score;
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById("gameScreen").classList.add('active');
+        showScreen("gameScreen");
         
+        // Start the high-fps loop
         requestAnimationFrame(gameLoop);
     }
-
 
     function spawnFood(){
         return {
@@ -61,14 +54,12 @@
         };
     }
 
-
     document.addEventListener("keydown", e => {
         const key = e.key;
         if(key === "ArrowLeft" && direction !== "RIGHT") nextDirection = "LEFT";
         if(key === "ArrowRight" && direction !== "LEFT") nextDirection = "RIGHT";
         if(key === "ArrowUp" && direction !== "DOWN") nextDirection = "UP";
         if(key === "ArrowDown" && direction !== "UP") nextDirection = "DOWN";
-
 
         if(mode === "multiplayer"){
             const k = key.toLowerCase();
@@ -79,9 +70,8 @@
         }
     });
 
-
-    function getNextHead(head, dir) {
-        let n = { x: head.x, y: head.y };
+    function getNextHead(currentHead, dir) {
+        let n = { x: currentHead.x, y: currentHead.y };
         if(dir === "LEFT") n.x -= box;
         if(dir === "RIGHT") n.x += box;
         if(dir === "UP") n.y -= box;
@@ -89,51 +79,43 @@
         return n;
     }
 
-
     function gameLoop(timestamp) {
         if(!running) return;
-
 
         const deltaTime = timestamp - lastTime;
         lastTime = timestamp;
 
+        // How long it takes to move one full square (difficulty)
+        const moveInterval = parseInt(difficulty.value);
+        moveAccumulator += deltaTime;
 
-        // Calculate speed based on difficulty (milliseconds per cell)
-        const moveSpeed = parseInt(difficulty.value);
-        moveProgress += deltaTime / moveSpeed;
-
-
-        if (moveProgress >= 1) {
-            moveProgress = 0;
+        // When accumulator reaches the interval, update logic positions
+        if (moveAccumulator >= moveInterval) {
+            moveAccumulator = 0;
             updateLogic();
         }
 
-
-        draw(moveProgress);
+        // Draw every frame using interpolation (progress between 0 and 1)
+        draw(moveAccumulator / moveInterval);
         requestAnimationFrame(gameLoop);
     }
-
 
     function updateLogic() {
         direction = nextDirection;
         let head1 = getNextHead(snake[0], direction);
 
-
-        // Border Logic
+        // Border and Collision
         if(mode === "endless") {
             if(head1.x < 0) head1.x = size - box; else if(head1.x >= size) head1.x = 0;
             if(head1.y < 0) head1.y = size - box; else if(head1.y >= size) head1.y = 0;
         } else if (head1.x < 0 || head1.y < 0 || head1.x >= size || head1.y >= size) return gameOver();
         
-        // Self Collision
         if(snake.some(seg => seg.x === head1.x && seg.y === head1.y)) return gameOver();
-
 
         snake.unshift(head1);
         if(head1.x === food.x && head1.y === food.y){
             score++; scoreDisplay.innerText = score; food = spawnFood();
         } else snake.pop();
-
 
         if(mode === "multiplayer"){
             direction2 = nextDirection2;
@@ -147,59 +129,53 @@
         }
     }
 
-
-    function draw(progress) {
+    function draw(interpolation) {
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, size, size);
-
 
         // Draw Food
         ctx.fillStyle = "red";
         ctx.fillRect(food.x, food.y, box, box);
 
-
-        // Render Snake 1 with Interpolation
-        ctx.fillStyle = colorPicker.value; // FIXED: Always uses current picker value
-        drawSnakeSmooth(snake, direction, progress);
-
+        // Draw Snake 1 with smoothness
+        ctx.fillStyle = colorPicker.value || "#00FF00"; // Fallback to green if picker fails
+        renderSmoothSnake(snake, direction, interpolation);
 
         if(mode === "multiplayer") {
             ctx.fillStyle = "#00d4ff";
-            drawSnakeSmooth(snake2, direction2, progress);
+            renderSmoothSnake(snake2, direction2, interpolation);
         }
     }
 
-
-    function drawSnakeSmooth(sArr, dir, progress) {
-        sArr.forEach((seg, i) => {
-            let nextPos = (i === 0) ? getNextHead(seg, dir) : sArr[i-1];
+    function renderSmoothSnake(body, dir, progress) {
+        body.forEach((seg, i) => {
+            // Segment i slides toward the position previously held by segment i-1
+            let target = (i === 0) ? getNextHead(seg, dir) : body[i-1];
             
-            // Seamlessly slide between current and next position
-            let renderX = seg.x + (nextPos.x - seg.x) * progress;
-            let renderY = seg.y + (nextPos.y - seg.y) * progress;
+            let renderX = seg.x + (target.x - seg.x) * progress;
+            let renderY = seg.y + (target.y - seg.y) * progress;
 
-
-            // Handle wrap-around visual jumps in endless mode
-            if (Math.abs(nextPos.x - seg.x) > box) renderX = seg.x;
-            if (Math.abs(nextPos.y - seg.y) > box) renderY = seg.y;
-
+            // Prevent weird sliding lines when wrapping through walls in Endless Mode
+            if (Math.abs(target.x - seg.x) > box) renderX = seg.x;
+            if (Math.abs(target.y - seg.y) > box) renderY = seg.y;
 
             ctx.fillRect(renderX + 1, renderY + 1, box - 2, box - 2);
         });
     }
 
+    function showScreen(id){
+        document.querySelectorAll('.screen').forEach(s => s.className="screen");
+        document.getElementById(id).className="screen active";
+    }
 
     function gameOver(){
         running = false;
         document.getElementById("finalScore").innerText = "Final Score: " + score;
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById("gameOverScreen").classList.add('active');
+        showScreen("gameOverScreen");
     }
-
 
     function backToMenu(){
         running = false;
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById("menu").classList.add('active');
+        showScreen("menu");
     }
 });
