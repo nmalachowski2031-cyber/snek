@@ -6,18 +6,18 @@
     <title>Neon Snake - Ultimate Custom Grid</title>
     <style>
         body { background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; flex-direction: column; overflow: hidden; }
-        #ui-container { text-align: center; background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 15px; border: 1px solid #333; backdrop-filter: blur(10px); width: 460px; }
+        #ui-container { text-align: center; background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 15px; border: 1px solid #333; backdrop-filter: blur(10px); width: 420px; }
         canvas { background: #000; box-shadow: 0 0 30px rgba(0, 255, 0, 0.2); border: 3px solid lime; border-radius: 5px; }
         .screen { display: none; }
         .active { display: block; }
         h1 { margin-top: 0; text-shadow: 0 0 10px lime; font-size: 24px; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
         button { padding: 10px; font-size: 13px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; background: lime; color: black; transition: 0.2s; }
         button:hover { filter: brightness(1.2); transform: scale(1.02); }
         select, input[type="color"] { width: 100%; padding: 5px; background: #222; color: white; border: 1px solid #444; border-radius: 5px; cursor: pointer; }
         label { font-size: 9px; color: #aaa; display: block; margin-bottom: 4px; text-align: left; text-transform: uppercase; }
         .score-box { display: flex; justify-content: space-around; margin: 10px 0; }
-        .full-width { grid-column: span 4; }
+        .full-width { grid-column: span 3; }
     </style>
 </head>
 <body>
@@ -30,7 +30,7 @@
             <div><label>P1 Color</label><input type="color" id="p1Color" value="#00FF00"></div>
             <div><label>P2 Color</label><input type="color" id="p2Color" value="#00d4ff"></div>
             <div><label>P3 Color</label><input type="color" id="p3Color" value="#ffcc00"></div>
-            <div><label>Enemy Color</label><input type="color" id="enemyColor" value="#FF3131"></div>
+            <div class="full-width"><label>Enemy Color</label><input type="color" id="enemyColor" value="#FF3131"></div>
             <div class="full-width">
                 <label>Base Speed</label>
                 <select id="difficulty">
@@ -264,8 +264,7 @@ document.addEventListener("DOMContentLoaded", function(){
             else if(direction3 === "DOWN") h3.y += box;
 
 
-            // Use wrapping same as endless/chaos for fairness, but no other rule change
-            wrap(h3);
+            wrap(h3); // same style as endless for boundaries
 
 
             if(snake3.some(s => s.x === h3.x && s.y === h3.y) || snake.some(s => s.x === h3.x && s.y === h3.y)) return gameOver();
@@ -280,7 +279,7 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
 
-        // Enemy AI (same as before – if you had modified, keep that logic here)
+        // NPC enemy (use whatever AI version you prefer here; unchanged from your base)
         if(npcSnake){
             let npcHead = { x: npcSnake[0].x, y: npcSnake[0].y };
             let target = (snake2 && Math.random() > 0.5) ? snake2[0] : snake[0];
