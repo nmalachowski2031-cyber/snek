@@ -46,7 +46,7 @@
             <button id="survival" style="background: #ff3131;">SURVIVAL MODE</button>
             <button id="roulette" style="background: #ff00ff;">CHAOS MODE</button>
             <button id="multi" style="background: #ffcc00;">2 PLAYER (W-A-S-D)</button>
-            <!-- BETA removed here -->
+            <!-- No (BETA) here -->
             <button id="three" style="background: #ff8800;">3 PLAYER MODE (I-J-K-L)</button>
         </div>
         <p style="font-size: 11px; margin-top: 15px; color: #777;">PERSONAL BEST: <span id="bestScore">0</span></p>
@@ -186,8 +186,10 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
     function wrap(pos) {
-        if(pos.x < 0) pos.x = size - box; else if(pos.x >= size) pos.x = 0;
-        if(pos.y < 0) pos.y = size - box; else if(pos.y >= size) pos.y = 0;
+        if(pos.x < 0) pos.x = size - box;
+        else if(pos.x >= size) pos.x = 0;
+        if(pos.y < 0) pos.y = size - box;
+        else if(pos.y >= size) pos.y = 0;
     }
 
 
@@ -226,8 +228,8 @@ document.addEventListener("DOMContentLoaded", function(){
         if (
             mode === "chaos" ||
             mode === "endless" ||
-            mode === "multiplayer" ||      // 2 player
-            mode === "threePlayer"         // 3 player
+            mode === "multiplayer" ||      // 2 player mode value
+            mode === "threePlayer"         // 3 player mode value
         ) {
             wrap(head);
         } else if (head.x < 0 || head.y < 0 || head.x >= size || head.y >= size) {
@@ -240,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         snake.unshift(head);
         if(head.x === food.x && head.y === food.y){
-            handleScoreAndFood(); // P1 scoring
+            handleScoreAndFood();
         } else snake.pop();
 
 
@@ -272,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             snake2.unshift(h2);
             if(h2.x === food.x && h2.y === food.y) {
-                handleScoreAndFood(); // P2 scoring
+                handleScoreAndFood();
             } else snake2.pop();
         }
 
@@ -305,12 +307,12 @@ document.addEventListener("DOMContentLoaded", function(){
 
             snake3.unshift(h3);
             if(h3.x === food.x && h3.y === food.y) {
-                handleScoreAndFood(); // P3 scoring
+                handleScoreAndFood();
             } else snake3.pop();
         }
 
 
-        // NPC enemy (unchanged)
+        // NPC enemy
         if(npcSnake){
             let npcHead = { x: npcSnake[0].x, y: npcSnake[0].y };
             let target = (snake2 && Math.random() > 0.5) ? snake2[0] : snake[0];
