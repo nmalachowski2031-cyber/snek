@@ -46,7 +46,6 @@
             <button id="survival" style="background: #ff3131;">SURVIVAL MODE</button>
             <button id="roulette" style="background: #ff00ff;">CHAOS MODE</button>
             <button id="multi" style="background: #ffcc00;">2 PLAYER (W-A-S-D)</button>
-            <!-- No (BETA) here -->
             <button id="three" style="background: #ff8800;">3 PLAYER MODE (I-J-K-L)</button>
         </div>
         <p style="font-size: 11px; margin-top: 15px; color: #777;">PERSONAL BEST: <span id="bestScore">0</span></p>
@@ -59,6 +58,7 @@
             <h3>SCORE: <span id="score">0</span></h3>
             <h3>BEST: <span id="bestInGame">0</span></h3>
         </div>
+        <p style="font-size: 11px; margin-top: 5px; color: #777;">Press ESC to pause/resume</p>
     </div>
 
 
@@ -92,6 +92,9 @@ document.addEventListener("DOMContentLoaded", function(){
     let food, enemyFood, score, mode, speed, running = false, gameTimeout;
 
 
+    let paused = false; // NEW: pause flag
+
+
     let highScore = localStorage.getItem("neonSnakeBest") || 0;
     bestDisplay.innerText = highScore;
 
@@ -116,8 +119,11 @@ document.addEventListener("DOMContentLoaded", function(){
         if(gameTimeout) clearTimeout(gameTimeout);
         mode = selectedMode;
         speed = parseInt(difficulty.value);
-        score = 0; running = true;
-        
+        score = 0;
+        running = true;
+        paused = false;
+
+
         snake = [{x: 200, y: 200}]; direction = "RIGHT";
         moveQueue = []; moveQueue2 = []; moveQueue3 = [];
         npcSnake = null; enemyFood = null; snake2 = null; snake3 = null;
@@ -149,9 +155,32 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 
+    // NEW: togglePause function
+    function togglePause() {
+        if (!running) return; // do not pause if game not running
+        paused = !paused;
+        if (paused) {
+            clearTimeout(gameTimeout);
+        } else {
+            gameLoop();
+        }
+    }
+
+
     document.addEventListener("keydown", e => {
-        if(!running) return;
         const key = e.key;
+
+
+        // ESC pauses/resumes
+        if (key === "Escape") {
+            togglePause();
+            return;
+        }
+
+
+        if(!running || paused) return;
+
+
         const lastDir = moveQueue.length > 0 ? moveQueue[moveQueue.length - 1] : direction;
 
 
@@ -194,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
     function gameLoop() {
-        if (!running) return;
+        if (!running || paused) return;
         updateLogic();
         draw();
         gameTimeout = setTimeout(gameLoop, speed);
@@ -228,8 +257,8 @@ document.addEventListener("DOMContentLoaded", function(){
         if (
             mode === "chaos" ||
             mode === "endless" ||
-            mode === "multiplayer" ||      // 2 player mode value
-            mode === "threePlayer"         // 3 player mode value
+            mode === "multiplayer" ||
+            mode === "threePlayer"
         ) {
             wrap(head);
         } else if (head.x < 0 || head.y < 0 || head.x >= size || head.y >= size) {
@@ -369,11 +398,13 @@ document.addEventListener("DOMContentLoaded", function(){
 
     function gameOver(){
         running = false;
+        paused = false;
         document.getElementById("finalScore").innerText = "Final Score: " + score;
         showScreen("gameOverScreen");
     }
     function backToMenu(){
         running = false;
+        paused = false;
         bestDisplay.innerText = highScore;
         showScreen("menu");
     }
