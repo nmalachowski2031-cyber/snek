@@ -15,57 +15,103 @@
             color: white; 
             font-family: sans-serif; 
             flex-direction: column; 
-            padding: 20px;
-            overflow: auto;
+            padding: 10px;
         }
         #ui-container { 
             text-align: center; 
             background: rgba(255, 255, 255, 0.05); 
-            padding: 25px; 
+            padding: 20px; 
             border-radius: 15px; 
             border: 1px solid #333; 
             backdrop-filter: blur(10px); 
-            width: 420px; 
-            max-height: 90vh;
-            overflow-y: auto;
+            width: 400px; 
+            max-height: 95vh;
+            overflow: visible;
         }
         canvas { 
             background: #000; 
             box-shadow: 0 0 30px rgba(0, 255, 0, 0.2); 
             border: 3px solid lime; 
             border-radius: 5px; 
+            display: block;
+            margin: 0 auto```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Snake - Ultimate Custom Grid</title>
+    <style>
+        body { 
+            background: #0a0a0a; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            color: white; 
+            font-family: sans-serif; 
+            flex-direction: column; 
+            padding: 10px;
+        }
+        #ui-container { 
+            text-align: center; 
+            background: rgba(255, 255, 255, 0.05); 
+            padding: 20px; 
+            border-radius: 15px; 
+            border: 1px solid #333; 
+            backdrop-filter: blur(10px); 
+            width: 400px; 
+            max-height: 95vh;
+            box-sizing: border-box;
+        }
+        canvas { 
+            background: #000; 
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2); 
+            border: 3px solid lime; 
+            border-radius: 5px;
+            max-width: 100%;
+            height: auto;
         }
         .screen { display: none; }
         .active { display: block; }
-        h1 { margin-top: 0; text-shadow: 0 0 10px lime; font-size: 24px; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
+        h1 { margin: 0 0 15px 0; text-shadow: 0 0 10px lime; font-size: 22px; }
+        .controls { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 6px; 
+            margin: 15px 0; 
+        }
         button { 
-            padding: 10px; 
-            font-size: 13px; 
+            padding: 6px 8px; 
+            font-size: 11px; 
             border: none; 
-            border-radius: 5px; 
+            border-radius: 4px; 
             font-weight: bold; 
             cursor: pointer; 
             background: lime; 
             color: black; 
             transition: 0.2s; 
             white-space: nowrap;
+            line-height: 1.2;
+            min-height: 28px;
         }
         button:hover { filter: brightness(1.2); transform: scale(1.02); }
         select, input[type="color"] { 
             width: 100%; 
-            padding: 5px; 
+            padding: 4px; 
             background: #222; 
             color: white; 
             border: 1px solid #444; 
-            border-radius: 5px; 
+            border-radius: 4px; 
             cursor: pointer; 
+            font-size: 12px;
         }
         label { 
-            font-size: 9px; 
+            font-size: 8px; 
             color: #aaa; 
             display: block; 
-            margin-bottom: 4px; 
+            margin-bottom: 3px; 
             text-align: left; 
             text-transform: uppercase; 
         }
@@ -93,11 +139,25 @@
         .mode-buttons {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-height: 300px;
+            gap: 6px;
+            max-height: 220px;
             overflow-y: auto;
+            padding: 5px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #555 transparent;
+        }
+        .mode-buttons::-webkit-scrollbar {
+            width: 4px;
+        }
+        .mode-buttons::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .mode-buttons::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 2px;
         }
         #winScreen h1 { color: lime; text-shadow: 0 0 20px lime; }
+        h3 { font-size: 16px; margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -110,7 +170,7 @@
             <div><label>P3 Color</label><input type="color" id="p3Color" value="#ffcc00"></div>
             <div class="full-width"><label>Enemy Color</label><input type="color" id="enemyColor" value="#FF3131"></div>
             <div class="full-width">
-                <label>Base Speed</label>
+                <label>Speed</label>
                 <select id="difficulty">
                     <option value="150">Chill</option>
                     <option value="100" selected>Standard</option>
@@ -119,17 +179,17 @@
             </div>
         </div>
         <div class="mode-buttons">
-            <button id="normal">NORMAL MODE</button>
-            <button id="endless" style="background: #00d4ff; color: black;">ENDLESS MODE</button>
-            <button id="survival" style="background: #ff3131; color: white;">SURVIVAL MODE</button>
-            <button id="slither" style="background: #ff8800; color: white;">SLITHER MODE</button>
-            <button id="roulette" style="background: #ff00ff; color: black;">CHAOS MODE</button>
-            <button id="multi" style="background: #ffcc00; color: black;">2 PLAYER (W-A-S-D)</button>
-            <button id="three" style="background: #ff8800; color: black;">3 PLAYER MODE (I-J-K-L)</button>
+            <button id="normal">NORMAL</button>
+            <button id="endless" style="background: #00d4ff; color: black;">ENDLESS</button>
+            <button id="survival" style="background: #ff3131; color: white;">SURVIVAL</button>
+            <button id="slither" style="background: #ff8800; color: white;">SLITHER</button>
+            <button id="roulette" style="background: #ff00ff; color: black;">CHAOS</button>
+            <button id="multi" style="background: #ffcc00; color: black;">2P NO WALLS</button>
+            <button id="three" style="background: #ff8800; color: black;">3P CHAOS</button>
         </div>
-        <p id="coinText" style="font-size: 11px; margin-top: 8px; color: #ffd700;">COINS: 0</p>
-        <button id="hatToggle" style="margin-top:8px;background:#ff00ff;color:black;">TOGGLE TOP HAT (10 COINS)</button>
-        <p style="font-size: 11px; margin-top: 10px; color: #777;">PERSONAL BEST: <span id="bestScore">0</span></p>
+        <p id="coinText" style="font-size: 11px; margin: 8px 0; color: #ffd700;">COINS: 0</p>
+        <button id="hatToggle" style="font-size:10px;padding:5px;">TOP HAT (10 COINS)</button>
+        <p style="font-size: 11px; margin: 8px 0; color: #777;">BEST: <span id="bestScore">0</span></p>
     </div>
 
 
@@ -139,14 +199,14 @@
             <h3>SCORE: <span id="score">0</span></h3>
             <h3>BEST: <span id="bestInGame">0</span></h3>
         </div>
-        <p style="font-size: 11px; margin-top: 5px; color: #777;">Press ESC to pause</p>
+        <p style="font-size: 11px; margin: 5px 0; color: #777;">ESC = Pause</p>
         <div id="pauseScreen">
             <div id="pauseScreenInner">
                 <h2>Paused</h2>
-                <p>Press ESC or click Resume to continue.</p>
+                <p>ESC or Resume to continue</p>
                 <div id="pauseButtons">
                     <button id="resumeBtn" style="background:#00d4ff;color:black;">RESUME</button>
-                    <button id="pauseMenuBtn" style="background:#555; color:white;">MAIN MENU</button>
+                    <button id="pauseMenuBtn" style="background:#555; color:white;">MENU</button>
                 </div>
             </div>
         </div>
@@ -207,10 +267,10 @@ document.addEventListener("DOMContentLoaded", function(){
 
     function updateHatButton() {
         if (equipTopHat) {
-            hatToggle.innerText = "TOP HAT EQUIPPED ✓";
+            hatToggle.innerText = "HAT ON ✓";
             hatToggle.style.background = "#ffd700";
         } else {
-            hatToggle.innerText = "TOGGLE TOP HAT (10 COINS)";
+            hatToggle.innerText = "TOP HAT (10)";
             hatToggle.style.background = "#ff00ff";
         }
     }
@@ -330,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function(){
             drawRect(snakeArray[i].x, snakeArray[i].y, trailColor); ctx.restore();
         }
         if (snakeArray.length > 0) {
-            const head = snakeArray[0];
+            const head = snakeArray;
             if (equipTopHat) {
                 ctx.save(); ctx.shadowColor = "#FFFFFF"; ctx.shadowBlur = 25;
                 ctx.fillStyle = "#FFFFFF";
@@ -429,7 +489,6 @@ document.addEventListener("DOMContentLoaded", function(){
         if (playerIndex === 3 && alive3) { alive3 = false; snake3 = null; }
 
 
-        // Slither mode: show winner screen when one player remains
         if (mode === "slither") {
             if (playerIndex === 1 && alive2) {
                 winner = "PLAYER 2 WINS! 🏆";
@@ -438,7 +497,7 @@ document.addEventListener("DOMContentLoaded", function(){
             }
             if (winner) {
                 document.getElementById("winnerText").innerText = winner;
-                document.getElementById("winScore").innerText = `FINAL SCORE: ${score}`;
+                document.getElementById("winScore").innerText = `SCORE: ${score}`;
                 showScreen("winScreen");
                 running = false;
                 return;
@@ -464,7 +523,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         if (alive1 && snake && snake.length > 0) {
             if(moveQueue.length > 0) direction = moveQueue.shift();
-            let head = { x: snake[0].x, y: snake[0].y };
+            let head = { x: snake.x, y: snake.y };
             if(direction === "LEFT") head.x -= box;
             else if(direction === "RIGHT") head.x += box;
             else if(direction === "UP") head.y -= box;
@@ -479,7 +538,6 @@ document.addEventListener("DOMContentLoaded", function(){
 
             if(snake.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); return; }
             if(npcSnake && npcSnake.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); return; }
-            // Player 2 hits Player 1's body = Player 2 dies, Player 1 wins
             if(snake2 && snake2.some(s => s.x === head.x && s.y === head.y)) { 
                 handlePlayerDeath(2, 1); 
                 return; 
@@ -495,7 +553,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         if(snake2 && alive2) {
             if(moveQueue2.length > 0) direction2 = moveQueue2.shift();
-            let h2 = { x: snake2[0].x, y: snake2[0].y };
+            let h2 = { x: snake2.x, y: snake2.y };
             if(direction2 === "LEFT") h2.x -= box;
             else if(direction2 === "RIGHT") h2.x += box;
             else if(direction2 === "UP") h2.y -= box;
@@ -525,7 +583,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         if(snake3 && alive3) {
             if(moveQueue3.length > 0) direction3 = moveQueue3.shift();
-            let h3 = { x: snake3[0].x, y: snake3[0].y };
+            let h3 = { x: snake3.x, y: snake3.y };
             if(direction3 === "LEFT") h3.x -= box;
             else if(direction3 === "RIGHT") h3.x += box;
             else if(direction3 === "UP") h3.y -= box;
@@ -551,12 +609,12 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
         if(npcSnake && (mode === "survival" || mode === "chaos")) {
-            let nh = { x: npcSnake[0].x, y: npcSnake[0].y };
+            let nh = { x: npcSnake.x, y: npcSnake.y };
             if (mode === "survival" && snake && snake.length > 0) {
-                if (Math.abs(nh.x - snake[0].x) > Math.abs(nh.y - snake[0].y)) {
-                    nh.x < snake[0].x ? nh.x += box : nh.x -= box;
+                if (Math.abs(nh.x - snake.x) > Math.abs(nh.y - snake.y)) {
+                    nh.x < snake.x ? nh.x += box : nh.x -= box;
                 } else {
-                    nh.y < snake[0].y ? nh.y += box : nh.y -= box;
+                    nh.y < snake.y ? nh.y += box : nh.y -= box;
                 }
             } else {
                 const dirs = ["LEFT", "RIGHT", "UP", "DOWN"][Math.floor(Math.random() * 4)];
