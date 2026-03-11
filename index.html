@@ -70,7 +70,7 @@
                 </select>
             </div>
         </div>
-        <div style="display: grid, gap: 8px;">
+        <div style="display: grid; gap: 8px;">
             <button id="normal">NORMAL MODE</button>
             <button id="endless" style="background: #00d4ff;">ENDLESS MODE</button>
             <button id="survival" style="background: #ff3131;">SURVIVAL MODE</button>
@@ -160,21 +160,6 @@ document.addEventListener("DOMContentLoaded", function(){
     let coins = parseInt(localStorage.getItem("neonSnakeCoins") || "0");
     coinText.innerText = "COINS: " + coins;
     let equipTopHat = false;
-
-
-    // Textures: use your sprite sheet URL for snake & apple
-    const spriteURL = "data:image/jpeg;base64,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";
-
-
-    const imgSnakeFace = new Image();
-    imgSnakeFace.src = spriteURL;
-    const imgApple = new Image();
-    imgApple.src = spriteURL;
-
-
-    // simple placeholder hat (leave empty if you don’t have one yet)
-    const imgTopHat = new Image();
-    imgTopHat.src = ""; // you can add a hat data URL later
 
 
     function addCoins(amount){
@@ -497,164 +482,4 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
             snake2.unshift(h2);
-            if(h2.x === food.x && h2.y === food.y) {
-                handleScoreAndFood();
-            } else snake2.pop();
-        }
-
-
-        // Snake 3
-        if(snake3 && alive3){
-            if(moveQueue3.length > 0) direction3 = moveQueue3.shift();
-            let h3 = { x: snake3[0].x, y: snake3[0].y };
-            if(direction3 === "LEFT") h3.x -= box;
-            else if(direction3 === "RIGHT") h3.x += box;
-            else if(direction3 === "UP") h3.y -= box;
-            else if(direction3 === "DOWN") h3.y += box;
-
-
-            if (
-                mode === "chaos" ||
-                mode === "endless" ||
-                mode === "multiplayer" ||
-                mode === "threePlayer"
-            ) {
-                wrap(h3);
-            } else if(h3.x < 0 || h3.y < 0 || h3.x >= size || h3.y >= size) {
-                handlePlayerDeath(3);
-                return;
-            }
-
-
-            if(snake3.some(s => s.x === h3.x && s.y === h3.y) || (alive1 && snake.length && snake.some(s => s.x === h3.x && s.y === h3.y))) {
-                handlePlayerDeath(3);
-                return;
-            }
-            if(alive2 && snake2 && snake2.some(s => s.x === h3.x && s.y === h3.y)) {
-                handlePlayerDeath(3);
-                return;
-            }
-
-
-            snake3.unshift(h3);
-            if(h3.x === food.x && h3.y === food.y) {
-                handleScoreAndFood();
-            } else snake3.pop();
-        }
-
-
-        // NPC enemy
-        if(npcSnake){
-            let npcHead = { x: npcSnake[0].x, y: npcSnake[0].y };
-            let target = (snake2 && alive2 && Math.random() > 0.5) ? snake2[0] : (snake.length ? snake[0] : (snake3 && alive3 ? snake3[0] : {x:0,y:0}));
-            if(enemyFood && Math.random() < 0.25) target = enemyFood;
-            if(Math.abs(target.x - npcHead.x) > Math.abs(target.y - npcHead.y))
-                npcHead.x += (target.x > npcHead.x) ? box : -box;
-            else
-                npcHead.y += (target.y > npcHead.y) ? box : -box;
-
-
-            if(mode === "chaos" || mode === "endless") wrap(npcHead);
-            npcSnake.unshift(npcHead);
-            if(enemyFood && npcHead.x === enemyFood.x && npcHead.y === enemyFood.y)
-                enemyFood = spawnFood();
-            else
-                npcSnake.pop();
-
-
-            if(alive1 && snake.length && npcHead.x === snake[0].x && npcHead.y === snake[0].y) {
-                handlePlayerDeath(1);
-            }
-            if(alive2 && snake2 && snake2.length && npcHead.x === snake2[0].x && npcHead.y === snake2[0].y) {
-                handlePlayerDeath(2);
-            }
-            if(alive3 && snake3 && snake3.length && npcHead.x === snake3[0].x && npcHead.y === snake3[0].y) {
-                handlePlayerDeath(3);
-            }
-        }
-    }
-
-
-    function draw() {
-        ctx.fillStyle = "black"; ctx.fillRect(0, 0, size, size);
-
-
-        // Apple using sprite sheet scaled into tile
-        if (imgApple.complete && food) {
-            ctx.drawImage(imgApple, 0, 0, imgApple.width, imgApple.height, food.x, food.y, box, box);
-        } else if (food) {
-            ctx.fillStyle = "red";
-            ctx.fillRect(food.x, food.y, box, box);
-        }
-
-
-        if(enemyFood) {
-            ctx.fillStyle = "#ff00ff";
-            ctx.fillRect(enemyFood.x, enemyFood.y, box, box);
-        }
-
-
-        // Player 1 with face + optional hat
-        if (alive1 && snake.length) {
-            const head = snake[0];
-            if (imgSnakeFace.complete) {
-                ctx.drawImage(imgSnakeFace, 0, 0, imgSnakeFace.width, imgSnakeFace.height, head.x, head.y, box, box);
-            } else {
-                ctx.fillStyle = p1CP.value;
-                ctx.fillRect(head.x + 1, head.y + 1, box - 2, box - 2);
-            }
-            // Top hat accessory (only if you later give imgTopHat.src a real URL)
-            if (equipTopHat && imgTopHat.complete && imgTopHat.src) {
-                const hatHeight = box * 0.6;
-                ctx.drawImage(imgTopHat, 0, 0, imgTopHat.width, imgTopHat.height, head.x, head.y - hatHeight / 2, box, hatHeight);
-            }
-            ctx.fillStyle = p1CP.value;
-            for (let i = 1; i < snake.length; i++) {
-                const s = snake[i];
-                ctx.fillRect(s.x + 1, s.y + 1, box - 2, box - 2);
-            }
-        }
-
-
-        // Player 2
-        if(snake2 && alive2){
-            ctx.fillStyle = p2CP.value;
-            snake2.forEach(s => ctx.fillRect(s.x + 1, s.y + 1, box - 2, box - 2));
-        }
-
-
-        // Player 3
-        if(snake3 && alive3){
-            ctx.fillStyle = p3CP.value;
-            snake3.forEach(s => ctx.fillRect(s.x + 1, s.y + 1, box - 2, box - 2));
-        }
-
-
-        // NPC
-        if(npcSnake){
-            ctx.fillStyle = enemyCP.value;
-            npcSnake.forEach(s => ctx.fillRect(s.x + 1, s.y + 1, box - 2, box - 2));
-        }
-    }
-
-
-    function gameOver(){
-        running = false;
-        paused = false;
-        hidePauseScreen();
-        document.getElementById("finalScore").innerText = "Final Score: " + score;
-        showScreen("gameOverScreen");
-    }
-    function backToMenu(){
-        running = false;
-        paused = false;
-        if (gameTimeout) clearTimeout(gameTimeout);
-        hidePauseScreen();
-        bestDisplay.innerText = highScore;
-        coinText.innerText = "COINS: " + coins;
-        showScreen("menu");
-    }
-});
-</script>
-</body>
-</html>
+            if(h2.x === food.x && h2.y ===
