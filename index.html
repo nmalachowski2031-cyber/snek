@@ -224,6 +224,13 @@ document.addEventListener("DOMContentLoaded", function(){
     const pauseScreen = document.getElementById("pauseScreen");
 
 
+    // Gold foil image
+    const goldImg = new Image();
+    goldImg.src = "https://png.pngtree.com/thumb_back/fw800/background/20241005/pngtree-shiny-yellow-gold-foil-abstract-background-image_15808494.jpg";
+    let goldImgReady = false;
+    goldImg.onload = () => goldImgReady = true;
+
+
     const box = 20, size = 400;
     let snake = [], snake2 = [], snake3 = [], npcSnake = [];
     let direction = "RIGHT", direction2 = "RIGHT", direction3 = "RIGHT";
@@ -232,10 +239,14 @@ document.addEventListener("DOMContentLoaded", function(){
     let paused = false;
     let alive1 = true, alive2 = false, alive3 = false;
     let coins = parseInt(localStorage.getItem("neonSnakeCoins") || "0");
-    let equipFedora = localStorage.getItem("neonSnakeFedora") === "true";
-    let equipGold = localStorage.getItem("neonSnakeGold") === "true";
+    let accessories = JSON.parse(localStorage.getItem("neonSnakeAccessories") || "{}");
     let highScore = parseInt(localStorage.getItem("neonSnakeBest") || "0");
     let winner = "";
+
+
+    // Initialize accessories if not set
+    if (!accessories.fedora) accessories.fedora = false;
+    if (!accessories.gold) accessories.gold = false;
 
 
     coinText.innerText = "COINS: " + coins;
@@ -244,8 +255,22 @@ document.addEventListener("DOMContentLoaded", function(){
     updateGoldButton();
 
 
+    function saveAccessories() {
+        localStorage.setItem("neonSnakeAccessories", JSON.stringify(accessories));
+    }
+
+
+    function syncAccessoryFlags() {
+        return {
+            fedora: !!accessories.fedora,
+            gold: !!accessories.gold
+        };
+    }
+
+
     function updateHatButton() {
-        if (equipFedora) {
+        const flags = syncAccessoryFlags();
+        if (flags.fedora) {
             hatToggle.innerText = "FEDORA ON ✓";
             hatToggle.style.background = "#ffd700";
         } else {
@@ -256,7 +281,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
     function updateGoldButton() {
-        if (equipGold) {
+        const flags = syncAccessoryFlags();
+        if (flags.gold) {
             goldToggle.innerText = "GOLD ON ✓";
             goldToggle.style.background = "#ffd700";
             goldToggle.style.color = "black";
@@ -276,39 +302,43 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
     hatToggle.onclick = () => {
-        if (equipFedora) {
-            equipFedora = false;
+        const flags = syncAccessoryFlags();
+        if (flags.fedora) {
+            accessories.fedora = false;
         } else {
             if (coins >= 10) {
                 coins -= 10;
                 localStorage.setItem("neonSnakeCoins", coins);
                 coinText.innerText = "COINS: " + coins;
-                equipFedora = true;
+                accessories.fedora = true;
             } else {
                 alert("Need 10 coins!");
                 return;
             }
         }
-        localStorage.setItem("neonSnakeFedora", equipFedora);
+        saveAccessories();
         updateHatButton();
+        updateGoldButton();
     };
 
 
     goldToggle.onclick = () => {
-        if (equipGold) {
-            equipGold = false;
+        const flags = syncAccessoryFlags();
+        if (flags.gold) {
+            accessories.gold = false;
         } else {
             if (coins >= 5) {
                 coins -= 5;
                 localStorage.setItem("neonSnakeCoins", coins);
                 coinText.innerText = "COINS: " + coins;
-                equipGold = true;
+                accessories.gold = true;
             } else {
                 alert("Need 5 coins!");
                 return;
             }
         }
-        localStorage.setItem("neonSnakeGold", equipGold);
+        saveAccessories();
+        updateHatButton();
         updateGoldButton();
     };
 
@@ -394,21 +424,60 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 
+    function drawGoldCell(x, y, alpha = 1) {
+        if (!goldImgReady) {
+            // Fallback to gold color if image not loaded
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.shadowColor = "#FFD700";
+            ctx.shadowBlur = 20 * alpha;
+            ctx.fillStyle = "#FFD700";
+            ctx.fillRect(x + 2, y + 2, box - 4, box - 4);
+            ctx.shadowBlur = 0;
+            ctx.restore();
+            return;
+        }
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = "#FFD700";
+        ctx.shadowBlur = 20 * alpha;
+        const pad = 2;
+        const w = box - pad * 2;
+        const h = box - pad * 2;
+        ctx.drawImage(goldImg, x + pad, y + pad, w, h);
+        ctx.restore();
+    }
+
+
     function drawSnake(snakeArray, color) {
-        const useGold = equipGold;
+        const flags = syncAccessoryFlags();
+        const useGold = flags.gold;
+
+
+        // TRAIL
         for(let i = 1; i < snakeArray.length; i++) {
             const alpha = Math.max(0.2, 1 - (i * 0.03));
-            const trailColor = useGold ? adjustBrightness("#FFD700", 0.3 + (alpha * 0.7)) : adjustBrightness(color, 0.3 + (alpha * 0.7));
-            ctx.save(); 
-            ctx.globalAlpha = alpha; 
-            ctx.shadowColor = trailColor; 
-            ctx.shadowBlur = 10 * alpha;
-            drawRect(snakeArray[i].x, snakeArray[i].y, trailColor); 
-            ctx.restore();
+            if (useGold) {
+                drawGoldCell(snakeArray[i].x, snakeArray[i].y, alpha);
+            } else {
+                const trailColor = adjustBrightness(color, 0.3 + (alpha * 0.7));
+                ctx.save(); 
+                ctx.globalAlpha = alpha; 
+                ctx.shadowColor = trailColor; 
+                ctx.shadowBlur = 10 * alpha;
+                drawRect(snakeArray[i].x, snakeArray[i].y, trailColor); 
+                ctx.restore();
+            }
         }
+
+
+        // HEAD + accessories
         if (snakeArray.length > 0) {
             const head = snakeArray[0];
-            if (equipFedora) {
+
+
+            // Fedora accessory (works with gold)
+            if (flags.fedora) {
                 ctx.save(); 
                 ctx.shadowColor = "#FFFFFF"; 
                 ctx.shadowBlur = 25;
@@ -418,10 +487,16 @@ document.addEventListener("DOMContentLoaded", function(){
                 ctx.shadowBlur = 0; 
                 ctx.restore();
             }
-            const headColor = useGold ? "#FFD700" : color;
-            ctx.shadowColor = headColor; 
-            ctx.shadowBlur = 20;
-            drawRect(head.x, head.y, headColor, true);
+
+
+            // Head (gold image or normal color)
+            if (useGold) {
+                drawGoldCell(head.x, head.y, 1);
+            } else {
+                ctx.shadowColor = color; 
+                ctx.shadowBlur = 20;
+                drawRect(head.x, head.y, color, true);
+            }
         }
     }
 
