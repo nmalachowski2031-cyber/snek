@@ -97,6 +97,7 @@
             max-height: 300px;
             overflow-y: auto;
         }
+        #winScreen h1 { color: lime; text-shadow: 0 0 20px lime; }
     </style>
 </head>
 <body>
@@ -121,7 +122,7 @@
             <button id="normal">NORMAL MODE</button>
             <button id="endless" style="background: #00d4ff; color: black;">ENDLESS MODE</button>
             <button id="survival" style="background: #ff3131; color: white;">SURVIVAL MODE</button>
-            <button id="survival2p" style="background: #ff8800; color: white;">2P SURVIVAL (W-A-S-D)</button>
+            <button id="slither" style="background: #ff8800; color: white;">SLITHER MODE</button>
             <button id="roulette" style="background: #ff00ff; color: black;">CHAOS MODE</button>
             <button id="multi" style="background: #ffcc00; color: black;">2 PLAYER (W-A-S-D)</button>
             <button id="three" style="background: #ff8800; color: black;">3 PLAYER MODE (I-J-K-L)</button>
@@ -158,6 +159,14 @@
         <button id="restart">PLAY AGAIN</button>
         <button id="menuBtn" style="background: #555; color: white;">MAIN MENU</button>
     </div>
+
+
+    <div id="winScreen" class="screen">
+        <h1 id="winnerText">PLAYER 1 WINS! 🏆</h1>
+        <p id="winScore"></p>
+        <button id="playAgainWin">PLAY AGAIN</button>
+        <button id="menuBtnWin" style="background: #555; color: white;">MAIN MENU</button>
+    </div>
 </div>
 
 
@@ -188,6 +197,7 @@ document.addEventListener("DOMContentLoaded", function(){
     let coins = parseInt(localStorage.getItem("neonSnakeCoins") || "0");
     let equipTopHat = localStorage.getItem("neonSnakeTopHat") === "true";
     let highScore = parseInt(localStorage.getItem("neonSnakeBest") || "0");
+    let winner = "";
 
 
     coinText.innerText = "COINS: " + coins;
@@ -232,16 +242,17 @@ document.addEventListener("DOMContentLoaded", function(){
     };
 
 
-    // Event listeners - FIXED order
     document.getElementById("normal").onclick = () => startGame("normal");
     document.getElementById("endless").onclick = () => startGame("endless");
     document.getElementById("survival").onclick = () => startGame("survival");
-    document.getElementById("survival2p").onclick = () => startGame("survival2p");  // ✅ NOW WORKS
+    document.getElementById("slither").onclick = () => startGame("slither");
     document.getElementById("roulette").onclick = () => startGame("chaos");
     document.getElementById("multi").onclick = () => startGame("multiplayer");
     document.getElementById("three").onclick = () => startGame("threePlayer");
     document.getElementById("restart").onclick = () => startGame(mode);
+    document.getElementById("playAgainWin").onclick = () => startGame(mode);
     document.getElementById("menuBtn").onclick = backToMenu;
+    document.getElementById("menuBtnWin").onclick = backToMenu;
     document.getElementById("resumeBtn").onclick = () => { if (paused) togglePause(); };
     document.getElementById("pauseMenuBtn").onclick = () => {
         running = false; paused = false; if (gameTimeout) clearTimeout(gameTimeout);
@@ -249,7 +260,6 @@ document.addEventListener("DOMContentLoaded", function(){
     };
 
 
-    // Rest of the code remains exactly the same...
     function showScreen(id){
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -266,6 +276,7 @@ document.addEventListener("DOMContentLoaded", function(){
         mode = selectedMode;
         speed = mode === "chaos" ? 60 : parseInt(difficulty.value);
         score = 0; running = true; paused = false; hidePauseScreen();
+        winner = "";
 
 
         snake = [{x: 5*box, y: 5*box}]; direction = "RIGHT"; moveQueue = [];
@@ -274,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function(){
         alive1 = true; alive2 = false; alive3 = false;
 
 
-        if(mode === "multiplayer" || mode === "chaos" || mode === "threePlayer" || mode === "survival2p") {
+        if(mode === "multiplayer" || mode === "chaos" || mode === "threePlayer" || mode === "slither") {
             snake2 = [{x: 3*box, y: 3*box}]; direction2 = "RIGHT"; alive2 = true;
         }
         if(mode === "threePlayer" || mode === "chaos") {
@@ -412,13 +423,30 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 
-    function handlePlayerDeath(playerIndex) {
+    function handlePlayerDeath(playerIndex, killerIndex = null) {
         if (playerIndex === 1 && alive1) { alive1 = false; snake = []; }
         if (playerIndex === 2 && alive2) { alive2 = false; snake2 = null; }
         if (playerIndex === 3 && alive3) { alive3 = false; snake3 = null; }
 
 
-        if (mode === "normal" || mode === "endless" || mode === "survival" || mode === "survival2p") gameOver();
+        // Slither mode: show winner screen when one player remains
+        if (mode === "slither") {
+            if (playerIndex === 1 && alive2) {
+                winner = "PLAYER 2 WINS! 🏆";
+            } else if (playerIndex === 2 && alive1) {
+                winner = "PLAYER 1 WINS! 🏆";
+            }
+            if (winner) {
+                document.getElementById("winnerText").innerText = winner;
+                document.getElementById("winScore").innerText = `FINAL SCORE: ${score}`;
+                showScreen("winScreen");
+                running = false;
+                return;
+            }
+        }
+
+
+        if (mode === "normal" || mode === "endless" || mode === "survival" || mode === "slither") gameOver();
         else if (!alive1 && !alive2 && !alive3) gameOver();
     }
 
@@ -431,12 +459,11 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
     function updateLogic() {
-        const hasWalls = (mode === "normal" || mode === "survival" || mode === "survival2p");
+        const hasWalls = (mode === "normal" || mode === "survival" || mode === "slither");
 
 
         if (alive1 && snake && snake.length > 0) {
             if(moveQueue.length > 0) direction = moveQueue.shift();
-            
             let head = { x: snake[0].x, y: snake[0].y };
             if(direction === "LEFT") head.x -= box;
             else if(direction === "RIGHT") head.x += box;
@@ -452,8 +479,12 @@ document.addEventListener("DOMContentLoaded", function(){
 
             if(snake.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); return; }
             if(npcSnake && npcSnake.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); return; }
-            if(snake2 && snake2.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); handlePlayerDeath(2); return; }
-            if(snake3 && snake3.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); handlePlayerDeath(3); return; }
+            // Player 2 hits Player 1's body = Player 2 dies, Player 1 wins
+            if(snake2 && snake2.some(s => s.x === head.x && s.y === head.y)) { 
+                handlePlayerDeath(2, 1); 
+                return; 
+            }
+            if(snake3 && snake3.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(3, 1); return; }
 
 
             snake.unshift(head);
@@ -478,8 +509,11 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
             if(snake2.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(2); return; }
-            if(snake && snake.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(2); handlePlayerDeath(1); return; }
-            if(snake3 && snake3.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(2); handlePlayerDeath(3); return; }
+            if(snake && snake.some(s => s.x === h2.x && s.y === h2.y)) { 
+                handlePlayerDeath(1, 2); 
+                return; 
+            }
+            if(snake3 && snake3.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(3, 2); return; }
             if(npcSnake && npcSnake.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(2); return; }
 
 
@@ -505,8 +539,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
             if(snake3.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(3); return; }
-            if(snake && snake.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(3); handlePlayerDeath(1); return; }
-            if(snake2 && snake2.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(3); handlePlayerDeath(2); return; }
+            if(snake && snake.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(1, 3); return; }
+            if(snake2 && snake2.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(2, 3); return; }
             if(npcSnake && npcSnake.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(3); return; }
 
 
