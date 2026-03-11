@@ -225,6 +225,15 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 
+    function backToMenu(){
+        showScreen("menu");
+        if(gameTimeout) clearTimeout(gameTimeout);
+        running = false;
+        paused = false;
+        hidePauseScreen();
+    }
+
+
     function startGame(selectedMode){
         if(gameTimeout) clearTimeout(gameTimeout);
         mode = selectedMode;
@@ -325,161 +334,4 @@ document.addEventListener("DOMContentLoaded", function(){
             const k = key.toLowerCase();
             const lastDir2 = moveQueue2.length > 0 ? moveQueue2[moveQueue2.length - 1] : direction2;
             if(k === "a" && lastDir2 !== "RIGHT") moveQueue2.push("LEFT");
-            if(k === "d" && lastDir2 !== "LEFT") moveQueue2.push("RIGHT");
-            if(k === "w" && lastDir2 !== "DOWN") moveQueue2.push("UP");
-            if(k === "s" && lastDir2 !== "UP") moveQueue2.push("DOWN");
-        }
-
-
-        // Player 3: IJKL
-        if(snake3 && alive3){
-            const k3 = key.toLowerCase();
-            const lastDir3 = moveQueue3.length > 0 ? moveQueue3[moveQueue3.length - 1] : direction3;
-            if(k3 === "j" && lastDir3 !== "RIGHT") moveQueue3.push("LEFT");
-            if(k3 === "l" && lastDir3 !== "LEFT") moveQueue3.push("RIGHT");
-            if(k3 === "i" && lastDir3 !== "DOWN") moveQueue3.push("UP");
-            if(k3 === "k" && lastDir3 !== "UP") moveQueue3.push("DOWN");
-        }
-    });
-
-
-    function wrap(pos) {
-        if(pos.x < 0) pos.x = size - box;
-        else if(pos.x >= size) pos.x = 0;
-        if(pos.y < 0) pos.y = size - box;
-        else if(pos.y >= size) pos.y = 0;
-    }
-
-
-    function gameLoop() {
-        if (!running || paused) return;
-        updateLogic();
-        draw();
-        gameTimeout = setTimeout(gameLoop, speed);
-    }
-
-
-    function handleScoreAndFood() {
-        score++;
-        scoreDisplay.innerText = score;
-        if(score > highScore) {
-            highScore = score;
-            localStorage.setItem("neonSnakeBest", highScore);
-            inGameBest.innerText = highScore;
-        }
-        // 1 coin every 3 points
-        if (score % 3 === 0) {
-            addCoins(1);
-        }
-        food = spawnFood();
-        if(mode === "chaos") speed = 60; // keep insane speed
-    }
-
-
-    function handlePlayerDeath(playerIndex) {
-        if (playerIndex === 1 && alive1) {
-            alive1 = false;
-            snake = [];
-        }
-        if (playerIndex === 2 && alive2) {
-            alive2 = false;
-            snake2 = null;
-        }
-        if (playerIndex === 3 && alive3) {
-            alive3 = false;
-            snake3 = null;
-        }
-
-
-        // Single-player modes end immediately
-        if (mode === "normal" || mode === "endless" || mode === "survival") {
-            gameOver();
-            return;
-        }
-
-
-        // Multi / chaos: end when everyone is dead
-        if (!alive1 && !alive2 && !alive3) {
-            gameOver();
-        }
-    }
-
-
-    function updateLogic() {
-        // Snake 1
-        if (alive1 && snake.length > 0) {
-            if(moveQueue.length > 0) direction = moveQueue.shift();
-            let head = { x: snake[0].x, y: snake[0].y };
-            if(direction === "LEFT") head.x -= box;
-            else if(direction === "RIGHT") head.x += box;
-            else if(direction === "UP") head.y -= box;
-            else if(direction === "DOWN") head.y += box;
-
-
-            if (
-                mode === "chaos" ||
-                mode === "endless" ||
-                mode === "multiplayer" ||
-                mode === "threePlayer"
-            ) {
-                wrap(head);
-            } else if (head.x < 0 || head.y < 0 || head.x >= size || head.y >= size) {
-                handlePlayerDeath(1);
-                return;
-            }
-
-
-            if(snake.some(s => s.x === head.x && s.y === head.y)) {
-                handlePlayerDeath(1);
-                return;
-            }
-            if(npcSnake && npcSnake.some(s => s.x === head.x && s.y === head.y)) {
-                handlePlayerDeath(1);
-                return;
-            }
-
-
-            snake.unshift(head);
-            if(head.x === food.x && head.y === food.y){
-                handleScoreAndFood();
-            } else {
-                snake.pop();
-            }
-        }
-
-
-        // Snake 2
-        if(snake2 && alive2){
-            if(moveQueue2.length > 0) direction2 = moveQueue2.shift();
-            let h2 = { x: snake2[0].x, y: snake2[0].y };
-            if(direction2 === "LEFT") h2.x -= box;
-            else if(direction2 === "RIGHT") h2.x += box;
-            else if(direction2 === "UP") h2.y -= box;
-            else if(direction2 === "DOWN") h2.y += box;
-
-
-            if (
-                mode === "chaos" ||
-                mode === "endless" ||
-                mode === "multiplayer" ||
-                mode === "threePlayer"
-            ) {
-                wrap(h2);
-            } else if(h2.x < 0 || h2.y < 0 || h2.x >= size || h2.y >= size) {
-                handlePlayerDeath(2);
-                return;
-            }
-
-
-            if(snake2.some(s => s.x === h2.x && s.y === h2.y) || (alive1 && snake.length && snake.some(s => s.x === h2.x && s.y === h2.y))) {
-                handlePlayerDeath(2);
-                return;
-            }
-            if(alive3 && snake3 && snake3.some(s => s.x === h2.x && s.y === h2.y)) {
-                handlePlayerDeath(2);
-                return;
-            }
-
-
-            snake2.unshift(h2);
-            if(h2.x === food.x && h2.y ===
+            if(k === "d" && lastDir2 !== "LEFT") moveQueue2.push("RIGHT
