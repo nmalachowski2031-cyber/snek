@@ -51,8 +51,8 @@
             margin: 15px 0; 
         }
         button { 
-            padding: 6px 8px; 
-            font-size: 11px; 
+            padding: 4px 6px; /* Smaller padding */
+            font-size: 9px; /* Smaller font */
             border: none; 
             border-radius: 4px; 
             font-weight: bold; 
@@ -61,8 +61,8 @@
             color: black; 
             transition: 0.2s; 
             white-space: nowrap;
-            line-height: 1.2;
-            min-height: 28px;
+            line-height: 1.1;
+            min-height: 22px; /* Reduced height */
         }
         button:hover { filter: brightness(1.2); transform: scale(1.02); }
         select, input[type="color"] { 
@@ -105,10 +105,10 @@
         #pauseScreen p { margin: 0 0 15px; font-size: 12px; color: #aaa; }
         #pauseButtons { display: grid; gap: 8px; }
         .mode-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            max-height: 220px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            max-height: 140px;
             overflow-y: auto;
             padding: 5px 0;
             scrollbar-width: thin;
@@ -148,15 +148,15 @@
         </div>
         <div class="mode-buttons">
             <button id="normal">NORMAL</button>
-            <button id="endless" style="background: #00d4ff; color: black;">ENDLESS</button>
-            <button id="survival" style="background: #ff3131; color: white;">SURVIVAL</button>
-            <button id="slither" style="background: #ff8800; color: white;">SLITHER</button>
-            <button id="roulette" style="background: #ff00ff; color: black;">CHAOS</button>
-            <button id="multi" style="background: #ffcc00; color: black;">2P NO WALLS</button>
-            <button id="three" style="background: #ff8800; color: black;">3P CHAOS</button>
+            <button id="endless">ENDLESS</button>
+            <button id="survival">SURVIVAL</button>
+            <button id="slither">SLITHER</button>
+            <button id="roulette">CHAOS</button>
+            <button id="multi">2P NO WALLS</button>
+            <button id="three">3P CHAOS</button>
         </div>
         <p id="coinText" style="font-size: 11px; margin: 8px 0; color: #ffd700;">COINS: 0</p>
-        <button id="hatToggle" style="font-size:10px;padding:5px;">TOP HAT (10 COINS)</button>
+        <button id="hatToggle" style="font-size:8px;padding:4px;">TOP HAT (10)</button>
         <p style="font-size: 11px; margin: 8px 0; color: #777;">BEST: <span id="bestScore">0</span></p>
     </div>
 
@@ -215,8 +215,8 @@ document.addEventListener("DOMContentLoaded", function(){
     const pauseScreen = document.getElementById("pauseScreen");
 
 
-    const box = 20, size = 400;  // Reduced from 30/600 to 20/400
-    let snake, snake2, snake3, npcSnake;
+    const box = 20, size = 400;
+    let snake = [], snake2 = [], snake3 = [], npcSnake = [];
     let direction = "RIGHT", direction2 = "RIGHT", direction3 = "RIGHT";
     let moveQueue = [], moveQueue2 = [], moveQueue3 = [];
     let food, enemyFood, score = 0, mode, speed, running = false, gameTimeout;
@@ -307,8 +307,10 @@ document.addEventListener("DOMContentLoaded", function(){
         winner = "";
 
 
-        snake = [{x: 8*box, y: 8*box}]; direction = "RIGHT"; moveQueue = [];  // Adjusted spawn positions
-        snake2 = null; snake3 = null; npcSnake = null; enemyFood = null;
+        // Initialize snakes as arrays
+        snake = [{x: 8*box, y: 8*box}]; 
+        snake2 = []; snake3 = []; npcSnake = []; enemyFood = null;
+        direction = "RIGHT"; moveQueue = [];
         moveQueue2 = []; moveQueue3 = [];
         alive1 = true; alive2 = false; alive3 = false;
 
@@ -337,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function(){
         let newFood;
         do {
             newFood = { x: Math.floor(Math.random() * (size / box)) * box, y: Math.floor(Math.random() * (size / box)) * box };
-        } while (snake && snake.some(s => s.x === newFood.x && s.y === newFood.y));
+        } while (snake.length > 0 && snake.some(s => s.x === newFood.x && s.y === newFood.y));
         return newFood;
     }
 
@@ -351,22 +353,32 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
     function drawSnake(snakeArray, color) {
+        // Draw body trail
         for(let i = 1; i < snakeArray.length; i++) {
             const alpha = Math.max(0.2, 1 - (i * 0.03));
             const trailColor = adjustBrightness(color, 0.3 + (alpha * 0.7));
-            ctx.save(); ctx.globalAlpha = alpha; ctx.shadowColor = trailColor; ctx.shadowBlur = 10 * alpha;
-            drawRect(snakeArray[i].x, snakeArray[i].y, trailColor); ctx.restore();
+            ctx.save(); 
+            ctx.globalAlpha = alpha; 
+            ctx.shadowColor = trailColor; 
+            ctx.shadowBlur = 10 * alpha;
+            drawRect(snakeArray[i].x, snakeArray[i].y, trailColor); 
+            ctx.restore();
         }
+        // Draw head
         if (snakeArray.length > 0) {
-            const head = snakeArray;
+            const head = snakeArray[0];
             if (equipTopHat) {
-                ctx.save(); ctx.shadowColor = "#FFFFFF"; ctx.shadowBlur = 25;
+                ctx.save(); 
+                ctx.shadowColor = "#FFFFFF"; 
+                ctx.shadowBlur = 25;
                 ctx.fillStyle = "#FFFFFF";
                 ctx.fillRect(head.x + 2, head.y - 6, box - 4, 4);
                 ctx.fillRect(head.x + 3, head.y - 8, box - 6, 3);
-                ctx.shadowBlur = 0; ctx.restore();
+                ctx.shadowBlur = 0; 
+                ctx.restore();
             }
-            ctx.shadowColor = color; ctx.shadowBlur = 20;
+            ctx.shadowColor = color; 
+            ctx.shadowBlur = 20;
             drawRect(head.x, head.y, color, true);
         }
     }
@@ -402,7 +414,7 @@ document.addEventListener("DOMContentLoaded", function(){
         if(key === "ArrowDown" && lastDir !== "UP") moveQueue.push("DOWN");
 
 
-        if(snake2 && alive2){
+        if(snake2.length > 0 && alive2){
             const k = key.toLowerCase();
             const lastDir2 = moveQueue2.length ? moveQueue2[moveQueue2.length - 1] : direction2;
             if(k === "a" && lastDir2 !== "RIGHT") moveQueue2.push("LEFT");
@@ -412,7 +424,7 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
 
-        if(snake3 && alive3){
+        if(snake3.length > 0 && alive3){
             const k3 = key.toLowerCase();
             const lastDir3 = moveQueue3.length ? moveQueue3[moveQueue3.length - 1] : direction3;
             if(k3 === "j" && lastDir3 !== "RIGHT") moveQueue3.push("LEFT");
@@ -453,8 +465,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
     function handlePlayerDeath(playerIndex, killerIndex = null) {
         if (playerIndex === 1 && alive1) { alive1 = false; snake = []; }
-        if (playerIndex === 2 && alive2) { alive2 = false; snake2 = null; }
-        if (playerIndex === 3 && alive3) { alive3 = false; snake3 = null; }
+        if (playerIndex === 2 && alive2) { alive2 = false; snake2 = []; }
+        if (playerIndex === 3 && alive3) { alive3 = false; snake3 = []; }
 
 
         if (mode === "slither") {
@@ -489,7 +501,8 @@ document.addEventListener("DOMContentLoaded", function(){
         const hasWalls = (mode === "normal" || mode === "survival" || mode === "slither");
 
 
-        if (alive1 && snake && snake.length > 0) {
+        // Player 1
+        if (alive1 && snake.length > 0) {
             if(moveQueue.length > 0) direction = moveQueue.shift();
             let head = { x: snake[0].x, y: snake[0].y };
             if(direction === "LEFT") head.x -= box;
@@ -505,12 +518,12 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
             if(snake.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); return; }
-            if(npcSnake && npcSnake.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); return; }
-            if(snake2 && snake2.some(s => s.x === head.x && s.y === head.y)) { 
+            if(npcSnake.length > 0 && npcSnake.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(1); return; }
+            if(snake2.length > 0 && snake2.some(s => s.x === head.x && s.y === head.y)) { 
                 handlePlayerDeath(2, 1); 
                 return; 
             }
-            if(snake3 && snake3.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(3, 1); return; }
+            if(snake3.length > 0 && snake3.some(s => s.x === head.x && s.y === head.y)) { handlePlayerDeath(3, 1); return; }
 
 
             snake.unshift(head);
@@ -519,7 +532,8 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
 
-        if(snake2 && alive2) {
+        // Player 2
+        if(snake2.length > 0 && alive2) {
             if(moveQueue2.length > 0) direction2 = moveQueue2.shift();
             let h2 = { x: snake2[0].x, y: snake2[0].y };
             if(direction2 === "LEFT") h2.x -= box;
@@ -535,12 +549,12 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
             if(snake2.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(2); return; }
-            if(snake && snake.some(s => s.x === h2.x && s.y === h2.y)) { 
+            if(snake.length > 0 && snake.some(s => s.x === h2.x && s.y === h2.y)) { 
                 handlePlayerDeath(1, 2); 
                 return; 
             }
-            if(snake3 && snake3.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(3, 2); return; }
-            if(npcSnake && npcSnake.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(2); return; }
+            if(snake3.length > 0 && snake3.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(3, 2); return; }
+            if(npcSnake.length > 0 && npcSnake.some(s => s.x === h2.x && s.y === h2.y)) { handlePlayerDeath(2); return; }
 
 
             snake2.unshift(h2);
@@ -549,7 +563,8 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
 
-        if(snake3 && alive3) {
+        // Player 3
+        if(snake3.length > 0 && alive3) {
             if(moveQueue3.length > 0) direction3 = moveQueue3.shift();
             let h3 = { x: snake3[0].x, y: snake3[0].y };
             if(direction3 === "LEFT") h3.x -= box;
@@ -565,9 +580,9 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
             if(snake3.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(3); return; }
-            if(snake && snake.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(1, 3); return; }
-            if(snake2 && snake2.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(2, 3); return; }
-            if(npcSnake && npcSnake.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(3); return; }
+            if(snake.length > 0 && snake.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(1, 3); return; }
+            if(snake2.length > 0 && snake2.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(2, 3); return; }
+            if(npcSnake.length > 0 && npcSnake.some(s => s.x === h3.x && s.y === h3.y)) { handlePlayerDeath(3); return; }
 
 
             snake3.unshift(h3);
@@ -576,9 +591,10 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
 
-        if(npcSnake && (mode === "survival" || mode === "chaos")) {
+        // NPC Snake
+        if(npcSnake.length > 0 && (mode === "survival" || mode === "chaos")) {
             let nh = { x: npcSnake[0].x, y: npcSnake[0].y };
-            if (mode === "survival" && snake && snake.length > 0) {
+            if (mode === "survival" && snake.length > 0) {
                 if (Math.abs(nh.x - snake[0].x) > Math.abs(nh.y - snake[0].y)) {
                     nh.x < snake[0].x ? nh.x += box : nh.x -= box;
                 } else {
@@ -606,15 +622,16 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
     function draw() {
-        ctx.fillStyle = "black"; ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = "black"; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         drawRect(food.x, food.y, "#FF0000", true);
         if(enemyFood) drawRect(enemyFood.x, enemyFood.y, enemyCP.value, true);
 
 
-        if(alive1 && snake) drawSnake(snake, p1CP.value);
-        if(alive2 && snake2) drawSnake(snake2, p2CP.value);
-        if(alive3 && snake3) drawSnake(snake3, p3CP.value);
-        if(npcSnake) drawSnake(npcSnake, enemyCP.value);
+        if(alive1 && snake.length > 0) drawSnake(snake, p1CP.value);
+        if(alive2 && snake2.length > 0) drawSnake(snake2, p2CP.value);
+        if(alive3 && snake3.length > 0) drawSnake(snake3, p3CP.value);
+        if(npcSnake.length > 0) drawSnake(npcSnake, enemyCP.value);
     }
 });
 </script>
